@@ -1,0 +1,40 @@
+﻿{% extends_v2 TEMPLATES_BASE "base.html" %}
+{% block content%}
+
+<div id="main">
+<div id="contentwrapper">
+{% if entries %}
+
+{% for entry in entries %}
+<div class="topPost">
+  <h2 class="topTitle"><a href="/blog/{{ entry.link }}" title="{{entry.title}}的永久链接">{{entry.title}}</a></h2>
+  <p class="topMeta">由 {{entry.author_name}} 在 {{entry.date|datetz:"F jS, Y"}}, 分类 {%for cate in entry.categories%} <a href="/category/{{cate.slug}}">{{cate.name}}</a> {%endfor%}</p>
+  <div class="topContent">{{entry.content_excerpt}}</div>
+  <span class="topComments"><a href="/{{entry.link}}#comments">评论({{entry.commentcount}})&#187;</a></span>
+  <span class="topTags">{% if entry.strtags %}{%for tag in entry.tags%}<a href="/tag/{{tag|urlencode}}">{{tag}}</a>{%endfor%}{%endif%}</span>
+  <span class="topMore"><a href="/{{ entry.link }}">更多...</a></span>
+<div class="cleared"></div>
+</div> <!-- Closes topPost --><br/>
+{% endfor %}
+
+{% else %}
+
+<div class="topPost">
+  <h2 class="topTitle">没有找到</h2>
+  <div class="topContent"><p>对不起, 但是你正在找的不在这里。</p></div>
+</div> <!-- Closes topPost -->
+
+{% endif %}
+
+<div id="nextprevious">
+<div class="alignleft">{% if show_next %}<a href="/blog/page/{{ pageindex|add:"1" }}">&laquo; 下一页</a>{%endif%}</div>
+<div class="alignright">{% if show_prev %}<a href="/blog/page/{{ pageindex|add:"-1" }}">&laquo; 上一页</a>{%endif%}</div>
+<div class="cleared"></div>
+</div>
+
+</div> <!-- Closes contentwrapper-->
+
+{% include_v2 TEMPLATES_BASE "sidebar.html" %}
+<div class="cleared"></div>
+</div><!-- Closes Main -->
+{% endblock %}

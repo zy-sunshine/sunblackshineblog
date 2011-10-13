@@ -1,0 +1,20 @@
+{%extends "base.html"%}
+{%block body%}
+<div id="bmark_list">
+    <h2>All Bookmarks</h2>
+    
+    List of Bookmarks:
+    <ul>
+    {%for bookmark in bookmarks%}
+      <li>
+        <a href="{{bookmark.url|escape}}" alt="{{bookmark.title|escape}}">{{bookmark.title|escape}}</a>
+        <span class="edit"><a href="{%url views.edit bookmark.key.id%}">edit</a></span></br>
+        {{bookmark.description|escape}}</br>
+        - created {{bookmark.created|date:"Y/m/d H:i:s"}} by {{bookmark.giver}}
+      </li>
+    {%endfor%}
+    </ul>
+    
+    <a href="{%url views.new%}">Create new bookmark</a>
+</div>
+{%endblock%}

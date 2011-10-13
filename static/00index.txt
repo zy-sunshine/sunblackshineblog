@@ -1,0 +1,6 @@
+static 是 micolog 中的全局 static 文件  TODO: 重新组织
+
+其他文件夹都是特定 themes 的，与 templates 下面的文件夹一一对应
+每个 theme 文件夹下都有不同 app 名称命名的文件夹，下面才是真正每个 app 需要的资源文件
+
+Theme 文件夹 包含各个项目 文件夹 的目的在于表明多个项目 app 可以共用一套模板，即在模板发布时，一个套模板可以包含多个 app 的样式。至于网站本身与 theme 不相关的 static 资源 以及模板资源则在标准文件夹中(/static/)

@@ -1,0 +1,30 @@
+﻿{% extends_v2 TEMPLATES_BASE "base.html" %}
+{% block title %} {{entry.title}} - {{blog.title}} {% endblock %}
+{% block content%}
+
+<div id="main">
+
+<div id="contentwrapper">
+{% if entry %}
+
+<div class="topPost">
+	<h2 class="topTitle"><a href="/{{ entry.link }}">{{entry.title}}</a></h2>
+	<div class="topContent">
+	{%mf entry_content %}
+	{{ entry.content }}
+	{%endmf%}
+	</div>
+	<div class="cleared"></div>
+</div> <!-- Closes topPost -->
+<br/><small>{%if self.is_admin%}<a href="{{entry.edit_url}}">Edit</a>{%endif%}</small>
+
+<div id="comments">
+{% include_v2 TEMPLATES_BASE "comments.html" %}
+</div> <!-- Closes Comment -->
+
+{%endif%}
+</div><!-- Closes contentwrapper-->
+{% include_v2 TEMPLATES_BASE "sidebar.html" %}
+<div class="cleared"></div>
+</div><!-- Closes Main -->
+{% endblock %}
