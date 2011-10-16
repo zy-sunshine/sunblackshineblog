@@ -11,7 +11,8 @@ from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import zipserve
 from google.appengine.api import urlfetch
-from google.appengine.api import memcache
+#from google.appengine.api import memcache
+from django.core.cache import cache as memcache
 from google.appengine.api import taskqueue
 from datetime import datetime ,timedelta
 import base64,random,math,zipfile

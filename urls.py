@@ -23,6 +23,8 @@ from blog.views import CheckCode
 
 from utils import zipserve
 
+from django.contrib.auth.views import login, logout
+
 urlpatterns = patterns('',
     (r'^$', include('home.urls')),
     # [[ZY
@@ -38,5 +40,8 @@ urlpatterns = patterns('',
 	(r'^checkcode/', CheckCode),
 	(r'^tinymce/(.*)', zipserve.make_zip_handler('tinymce.zip') ),
 	#(r'^i18n/', include('django.conf.urls.i18n'))
+	
+	(r'^accounts/login/$',  login),
+    (r'^accounts/logout/$', logout),
     # ZY]]
     )

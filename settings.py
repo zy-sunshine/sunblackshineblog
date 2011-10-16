@@ -26,6 +26,19 @@ ADMINS = ()
 
 MANAGERS = ADMINS
 
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'sunshineblog',                      # Or path to database file if using sqlite3.
+        'USER': 'root',                      # Not used with sqlite3.
+        'PASSWORD': 'root',                  # Not used with sqlite3.
+        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    }
+}
+
+
 DATABASE_ENGINE = ''           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
 DATABASE_NAME = ''             # Or path to database file if using sqlite3.
 DATABASE_USER = ''             # Not used with sqlite3.
@@ -81,7 +94,7 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    #'django.core.context_processors.auth',
+    'django.core.context_processors.auth',
     #'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
     #'django.core.context_processors.media',
@@ -90,15 +103,19 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    #'django.middleware.common.CommonMiddleware',
-    #'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'django.middleware.cache.CacheMiddleware', # cache each GET POST have no parameter page
+    'django.middleware.common.CommonMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
-    #'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'django.contrib.messages.middleware.MessageMiddleware',
-    'gaesessions.DjangoSessionMiddleware',
+    #'gaesessions.DjangoSessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
 )
-
+# option of cache middleware
+#CACHE_MIDDLEWARE_SECONDS
+#CACHE_MIDDLEWARE_KEY_PREFIX
+#CACHE_MIDDLEWARE_ANONYMOUS_ONLY 
 ROOT_URLCONF = 'urls'
 THEME_CONFIG = {}
 THEME_CONFIG[1] = {}
@@ -164,8 +181,9 @@ TEMPLATE_DIRS = (
 
 
 INSTALLED_APPS = (
-    #'django.contrib.admin',
-    #'django.contrib.sessions',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'django.contrib.sessions',
     'django.contrib.contenttypes',
     #'django.contrib.sites',
     #'django.contrib.messages',
@@ -175,6 +193,7 @@ INSTALLED_APPS = (
     'sinaweibo',
     'admin',
     'tests',
+    'configs',
 )
 #
 #ALL_TEMPLATE_CUR = ''
@@ -225,5 +244,8 @@ LANGUAGES = (
 #activate(configs.get_g_blog().language)
 
 #activate(g_blog.language)
-import configs
-LANGUAGE_CODE=configs.get_g_blog().language
+#import configs
+#LANGUAGE_CODE=configs.get_g_blog().language
+
+#CACHE_BACKEND = 'file:///var/tmp/django_cache'
+CACHE_BACKEND = 'file://E:/tmp/django_cache?timeout=30&max_entries=400'

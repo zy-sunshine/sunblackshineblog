@@ -5,50 +5,16 @@ from base import vcache
 from utils import dict4ini
 from settings import ROOT_PATH
 #from google.appengine.api import users
-from google.appengine.ext import db
+#from google.appengine.ext import db
+from gae_adapter import db, Model
+from django.contrib.auth.models import User
 import pickle
 from django.utils.translation import gettext_lazy as _
 import urls
 from django.conf.urls.defaults import *
-from blog.model import Entry
+#from blog.model import Entry
 #BLOG = dict4ini.DictIni(os.path.join(ROOT_PATH, 'blog.conf'))
-__all__ = ['get_g_blog']
-#class LangIterator:
-#    def __init__(self,path='locale'):
-#        self.iterating = False
-#        self.path = path
-#        self.list = []
-#        for value in  os.listdir(self.path):
-#                if os.path.isdir(os.path.join(self.path,value)):
-#                    if os.path.exists(os.path.join(self.path,value,'LC_MESSAGES')):
-#                        try:
-#                            lang=open(os.path.join(self.path,value,'language')).readline()
-#                            self.list.append({'code':value,'lang':lang})
-#                        except:
-#                            self.list.append( {'code':value,'lang':value})
-#
-#    def __iter__(self):
-#        return self
-#
-#    def next(self):
-#        if not self.iterating:
-#            self.iterating = True
-#            self.cursor = 0
-#
-#        if self.cursor >= len(self.list):
-#            self.iterating = False
-#            raise StopIteration
-#        else:
-#            value = self.list[self.cursor]
-#            self.cursor += 1
-#            return value
-#
-#    def getlang(self,language):
-#        from django.utils.translation import  to_locale
-#        for item in self.list:
-#            if item['code']==language or item['code']==to_locale(language):
-#                return item
-#        return {'code':'en_US','lang':'English'}
+#__all__ = ['get_g_blog', 'Theme', 'ThemeIterator', 'LangIterator']
 
 class Theme:
     def __init__(self, name='default'):
@@ -143,7 +109,7 @@ class LangIterator:
                 return item
         return {'code':'en_US','lang':'English'}
 
-class OptionSet(db.Model):
+class OptionSet(Model):
     name=db.StringProperty()
     value=db.TextProperty()
     #blobValue=db.BlobProperty()
@@ -162,6 +128,7 @@ class OptionSet(db.Model):
         opt=OptionSet.get_or_insert(name)
         opt.name=name
         opt.value=pickle.dumps(value)
+        #import pdb; pdb.set_trace()
         opt.put()
 
     @classmethod
@@ -172,7 +139,8 @@ class OptionSet(db.Model):
 
 ### 配置类继承于 db.Model ,类成员有的为动态初始化, 有的为 db 字段, db 字段为需要保持的配置信息
 ### 全局配置
-class Config(db.Model):
+   
+class Config(Model):
     owner = db.UserProperty()
     author=db.StringProperty(default='admin')
     rpcuser=db.StringProperty(default='admin')
@@ -185,13 +153,14 @@ class Config(db.Model):
     sitemap_include_category=db.BooleanProperty(default=False)
     sitemap_include_tag=db.BooleanProperty(default=False)
     sitemap_ping=db.BooleanProperty(default=False)
-
-    default_theme=Theme("default")
+    def __init__(self, *args, **kwds):
+        Model.__init__(self, *args, **kwds)
+        self.default_theme=Theme("default")
 
 ### 整体网站配置
 class SiteConfig(Config):
-    pass
-
+    def __init__(self, *args, **kwds):
+        Config.__init__(self, *args, **kwds)
 
 ### 子项目 Blog 配置
 class BlogConfig(Config):
@@ -222,24 +191,19 @@ class BlogConfig(Config):
 
     domain=db.StringProperty()
     show_excerpt=db.BooleanProperty(default=True)
-    version=0.741
-
+    
     allow_pingback=db.BooleanProperty(default=False)
     allow_trackback=db.BooleanProperty(default=False)
-
-    theme=None
-    langs=None
-    application=None
     
-    def __init__(self,
-               parent=None,
-               key_name=None,
-               _app=None,
-               _from_entity=False,
-               **kwds):
+    def __init__(self, *args, **kwds):
+        Config.__init__(self, *args, **kwds)
+        self.version=0.741
+        self.theme=None
+        self.langs=None
+        self.application=None
+    
         from micolog_plugin import Plugins
         self.plugins = Plugins(self)
-        db.Model.__init__(self,parent,key_name,_app,_from_entity,**kwds)
         self.iterating = False
 
     def tigger_filter(self,name,content,*arg1,**arg2):
@@ -275,17 +239,17 @@ class BlogConfig(Config):
     def rootpath(self):
         return ROOT_PATH
 
-    @vcache("blog.hotposts")
-    def hotposts(self):
-        return Entry.all().filter('entrytype =','post').filter("published =", True).order('-readtimes').fetch(8)
+    #@vcache("blog.hotposts")
+    #def hotposts(self):
+    #    return Entry.all().filter('entrytype =','post').filter("published =", True).order('-readtimes').fetch(8)
 
-    @vcache("blog.recentposts")
-    def recentposts(self):
-        return Entry.all().filter('entrytype =','post').filter("published =", True).order('-date').fetch(8)
+    #@vcache("blog.recentposts")
+    #def recentposts(self):
+    #    return Entry.all().filter('entrytype =','post').filter("published =", True).order('-date').fetch(8)
 
-    @vcache("blog.postscount")
-    def postscount(self):
-        return Entry.all().filter('entrytype =','post').filter("published =", True).order('-date').count()
+    #@vcache("blog.postscount")
+    #def postscount(self):
+    #    return Entry.all().filter('entrytype =','post').filter("published =", True).order('-date').count()
         
     def __iter__(self):
         return self
@@ -331,6 +295,7 @@ class BlogConfig(Config):
         else:
             logging.debug('=========: not findit %s', findit)
         
+
 def InitBlogData():
     global g_blog
     OptionSet.setValue('PluginActive',[u'googleAnalytics', u'wordpress', u'sys_plugin'])
@@ -350,9 +315,9 @@ def InitBlogData():
     activate(g_blog.language)
     g_blog.save()
 
-    entry=Entry(title=_("Hello world!").decode('utf8'))
-    entry.content=_('<p>Welcome to micolog. This is your first post. Edit or delete it, then start blogging!</p>').decode('utf8')
-    entry.save(True)
+    #entry=Entry(title=_("Hello world!").decode('utf8'))
+    #entry.content=_('<p>Welcome to micolog. This is your first post. Edit or delete it, then start blogging!</p>').decode('utf8')
+    #entry.save(True)
     link=Link(href='http://xuming.net',linktext=_("Xuming's blog").decode('utf8'))
     link.put()
     return g_blog
@@ -426,82 +391,6 @@ class Sitemap:
       
             except :
                 logging.error('Cannot contact: %s' % ping[1])
-
-class BlogOld:
-    def __getattr__(self, name):
-        val = self.__dict__['BLOG'].get(name, None)
-        if val in ('False', 'True'):
-           val = val == 'False' and False or True
-        val = val == 'None' and None or val
-        return val
-        
-    def __setattr__(self, name, value):
-        val = value
-        if val in (False, True):
-            val = val and 'True' or 'False'
-        val = val == None and 'None' or val
-        self.__dict__['BLOG'][name] = val
-        
-    def __init__(self,
-               parent=None,
-               key_name=None,
-               _app=None,
-               _from_entity=False,
-               **kwds):
-        self.__dict__['blog_conf'] = os.path.join(ROOT_PATH, 'blog.conf')
-        self.__dict__['BLOG'] = dict4ini.DictIni(self.__dict__['blog_conf'])
-        self.__dict__['theme'] = None
-        self.__dict__['langs'] = None
-        self.__dict__['application'] = None
-        
-        from micolog_plugin import Plugins
-        self.__dict__['plugins'] = Plugins(self)
-        #db.Model.__init__(self,parent,key_name,_app,_from_entity,**kwds)
-
-    def tigger_filter(self,name,content,*arg1,**arg2):
-        return self.__dict__['plugins'].tigger_filter(name,content,blog=self,*arg1,**arg2)
-
-    def tigger_action(self,name,*arg1,**arg2):
-        return self.__dict__['plugins'].tigger_action(name,blog=self,*arg1,**arg2)
-
-    def tigger_urlmap(self,url,*arg1,**arg2):
-        return self.__dict__['plugins'].tigger_urlmap(url,blog=self,*arg1,**arg2)
-
-    def get_ziplist(self):
-        return self.__dict__['plugins'].get_ziplist();
-
-    def save(self):
-        self.__dict__['BLOG'].save()
-
-    def initialsetup(self):
-        self.title = 'Your Blog Title'
-        self.subtitle = 'Your Blog Subtitle'
-
-    def get_theme(self):
-        self.__dict__['theme'] = Theme(self.theme_name);
-        return self.__dict__['theme']
-
-    def get_langs(self):
-        self.__dict__['langs'] = LangIterator()
-        return self.__dict__['theme']
-
-    def cur_language(self):
-        return self.get_langs().getlang(self.language)
-
-    def rootpath(self):
-        return ROOT_PATH
-
-    @vcache("blog.hotposts")
-    def hotposts(self):
-        return Entry.all().filter('entrytype =','post').filter("published =", True).order('-readtimes').fetch(8)
-
-    @vcache("blog.recentposts")
-    def recentposts(self):
-        return Entry.all().filter('entrytype =','post').filter("published =", True).order('-date').fetch(8)
-
-    @vcache("blog.postscount")
-    def postscount(self):
-        return Entry.all().filter('entrytype =','post').filter("published =", True).order('-date').count()
 
 #g_blog = Blog()
 

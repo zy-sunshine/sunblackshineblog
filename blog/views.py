@@ -26,7 +26,8 @@ from base import urlencode
 
 from base import urldecode
 
-from google.appengine.api import memcache
+#from google.appengine.api import memcache
+from django.core.cache import cache as memcache
 
 #from datetime import datetime ,timedelta
 #import base64,random

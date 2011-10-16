@@ -16,7 +16,8 @@
 #	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import random
-from google.appengine.api import memcache
+#from google.appengine.api import memcache
+from django.core.cache import cache as memcache
 
 _sidChars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 _defaultTimeout=30*60 # 30 min

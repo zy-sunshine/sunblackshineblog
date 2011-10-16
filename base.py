@@ -6,7 +6,9 @@ from settings import SITE_CONFIG
 from utils import AppContext, get_extra_context, get_template_uri
 from django import shortcuts
 from django.utils.encoding import iri_to_uri
-from google.appengine.api import users
+#from google.appengine.api import users
+from django.contrib import auth
+from django.contrib.auth.views import login, logout
 from google.appengine.api import memcache
 from django.core import urlresolvers
 
@@ -19,6 +21,8 @@ from functools import wraps
 from django.template import TemplateDoesNotExist
 import traceback
 import urllib
+
+from django.core.urlresolvers import reverse
 
 def vcache(key="",time=3600):
     def _decorate(method):
@@ -124,11 +128,13 @@ class SiteRequestHandler(TemplateView):
     def initialize(self, request):
         TemplateView.initialize(self, request)
         ## some for authorize
-        self.login_user = users.get_current_user()
-        self.is_login = (self.login_user != None)
-        self.loginurl=users.create_login_url(self.request.path)
-        self.logouturl=users.create_logout_url(self.request.path)
-        self.is_admin = users.is_current_user_admin()
+        #self.login_user = users.get_current_user()
+        self.login_user = auth.authenticate(username='john', password='secret')
+        self.is_login = (self.login_user is not None)
+        self.loginurl=reverse(login)#users.create_login_url(self.request.path)
+        self.logouturl=reverse(logout)#users.create_logout_url(self.request.path)
+        #self.is_admin = users.is_current_user_admin()
+        self.is_admin = False # TODO: make it valid
         # three status: admin author login
         if self.is_admin:
             self.auth = 'admin'
@@ -460,13 +466,6 @@ def cache(key="",time=3600):
         def _wrapper(*args, **kwargs):
             if not configs.get_g_blog().enable_memcache:
                 return method(*args, **kwargs)
-                
-            logging.debug('#######))))))))')
-            request=args[0]
-            #response=args[0].response
-            #skey=key+ request.path_qs
-            logging.debug('+++++++skey:'+skey)
-            logging.debug('%s'% dir(memecache))
             html= memcache.get(skey)
             #arg[0] is BaseRequestHandler object
 
