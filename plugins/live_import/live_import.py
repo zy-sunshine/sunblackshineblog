@@ -4,7 +4,7 @@ from micolog_plugin import Plugin_importbase
 from BeautifulSoup import *
 from datetime import datetime
 ## TODO: reopen it
-#from blog.model import Entry,Comment,Media
+#from blog.models import Entry,Comment,Media
 import logging,math
 import re
 from base import BaseRequestHandler,urldecode

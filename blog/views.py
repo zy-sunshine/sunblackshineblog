@@ -7,13 +7,15 @@ import re
 #from google.appengine.ext.webapp import template
 from weibopy.auth import OAuthHandler
 from weibopy.api import API
-from gaesessions import get_current_session
+#from gaesessions import get_current_session
 import django
 from django import http
 from django import shortcuts
 from django.template import RequestContext
 
-from blog.model import Entry, Link, Archive, Tag, Category, Comment
+from blog.models import Entry, Link, Archive, Tag, Category, Comment
+#from models import Entry, Link, Archive, Tag, Category, Comment
+#import pdb; pdb.set_trace()
 
 from django.core.urlresolvers import reverse
 from google.appengine.ext import db
@@ -58,12 +60,13 @@ class BasePublicPage(BaseRequestHandler):
         BaseRequestHandler.__init__(self)
     def initialize(self, request):
         BaseRequestHandler.initialize(self,request)
-        m_pages=Entry.all().filter('entrytype =','page')\
-            .filter('published =',True)\
-            .filter('entry_parent =',0)\
-            .order('menu_order')
-        blogroll=Link.all().filter('linktype =','blogroll')
-        archives=Archive.all().order('-year').order('-month').fetch(12)
+        m_pages=Entry.all().filter(entrytype = 'page') \
+            .filter(published = True)\
+            .filter(entry_parent = 0)\
+            .order_by('menu_order')
+        blogroll=Link.all().filter(linktype = 'blogroll')
+        #archives=Archive.all().order_by('-year').order_by('-month').fetch(12)
+        archives=Archive.all().order_by('-year', '-month')[0:12]
         alltags=Tag.all()
         self.template_vals.update({
                         'menu_pages':m_pages,
@@ -71,7 +74,7 @@ class BasePublicPage(BaseRequestHandler):
                         'blogroll':blogroll,
                         'archives':archives,
                         'alltags':alltags,
-                        'recent_comments':Comment.all().order('-date').fetch(5)
+                        'recent_comments':Comment.all().order_by('-date')[0:5]#.fetch(5)
         })
 
     def m_list_pages(self):
@@ -96,10 +99,10 @@ class BasePublicPage(BaseRequestHandler):
         return ret
 
     def sticky_entrys(self):
-        return Entry.all().filter('entrytype =','post')\
-            .filter('published =',True)\
-            .filter('sticky =',True)\
-            .order('-date')
+        return Entry.all().filter(entrytype = 'post')\
+            .filter(published = True)\
+            .filter(sticky = True)\
+            .order_by('-date')
 
 class MainPage(BasePublicPage):
     def __init__(self):
@@ -140,19 +143,24 @@ class MainPage(BasePublicPage):
     @cache()
     def doget(self,page):
         page=int(page)
-        entrycount=self.blog.postscount()
+        #entrycount=self.blog.postscount()
+        entrycount=Entry.postscount()
         max_page = entrycount / self.blog.posts_per_page + ( entrycount % self.blog.posts_per_page and 1 or 0 )
 
         if page < 1 or page > max_page:
             return self.error(404)
 
-        entries = Entry.all().filter('entrytype =','post').\
-                filter("published =", True).order('-date').\
-                fetch(self.blog.posts_per_page, offset = (page-1) * self.blog.posts_per_page)
-
+        offset_start = (page-1) * self.blog.posts_per_page
+        offset_end = offset_start + self.blog.posts_per_page
+        entries = Entry.all().filter(entrytype = 'post').\
+                filter(published = True).order_by('-date')[offset_start:offset_end]#.\
+                #fetch(self.blog.posts_per_page, offset = (page-1) * self.blog.posts_per_page)
+        #import pdb; pdb.set_trace()
 
         show_prev =entries and  (not (page == 1))
+        #show_prev = True
         show_next =entries and  (not (page == max_page))
+        #show_next = True
         #print page,max_page,self.blog.entrycount,self.blog.posts_per_page
 
 
@@ -182,9 +190,9 @@ class entriesByCategory(BasePublicPage):
             page_index=1
         slug=urldecode(slug)
 
-        cats=Category.all().filter('slug =',slug).fetch(1)
+        cats=Category.all().filter(slug = slug)[0:1]#.fetch(1)
         if cats:
-            entries=Entry.all().filter("published =", True).filter('categorie_keys =',cats[0].key()).order("-date")
+            entries=Entry.all().filter(published = True).filter(categorie_keys = cats[0].key()).order_by("-date")
             entries,links=Pager(query=entries,items_per_page=20).fetch(page_index)
             self.render('category',{'entries':entries,'category':cats[0],'pager':links})
         else:
@@ -229,7 +237,7 @@ class entriesByTag(BasePublicPage):
         import urllib
         slug=urldecode(slug)
 
-        entries=Entry.all().filter("published =", True).filter('tags =',slug).order("-date")
+        entries=Entry.all().filter(published = True).filter(tags = slug).order_by("-date")
         entries,links=Pager(query=entries,items_per_page=20).fetch(page_index)
         self.render('tag',{'entries':entries,'tag':slug,'pager':links})
 
@@ -248,10 +256,10 @@ class SinglePost(BasePublicPage):
     def GET(self,slug=None,postid=None):
         if postid:
             postid = int(postid)
-            entries = Entry.all().filter("published =", True).filter('post_id =', postid).fetch(1)
+            entries = Entry.all().filter(published = True).filter(post_id = postid)[0:1]#.fetch(1)
         else:
             slug=urldecode(slug)
-            entries = Entry.all().filter("published =", True).filter('link =', slug).fetch(1)
+            entries = Entry.all().filter(published = True).filter(link = slug)[0:1]#.fetch(1)
         if not entries or len(entries) == 0:
             self.error(404)
             return
@@ -325,10 +333,10 @@ class SinglePost(BasePublicPage):
             return
         self.response.headers['Content-Type'] = "text/xml"
         if postid:
-            entries = Entry.all().filter("published =", True).filter('post_id =', postid).fetch(1)
+            entries = Entry.all().filter(published = True).filter(post_id = postid)[0:1]#.fetch(1)
         else:
             slug=urldecode(slug)
-            entries = Entry.all().filter("published =", True).filter('link =', slug).fetch(1)
+            entries = Entry.all().filter(published = True).filter(link = slug)[0:1]#.fetch(1)
 
         if not entries or len(entries) == 0 :#or  (postid and not entries[0].link.endswith(self.blog.default_link_format%{'post_id':postid})):
             self.response.out.write(error % "empty slug/postid")
@@ -378,7 +386,7 @@ class SinglePost(BasePublicPage):
 ##            self.response.out.write(error % "urlfetch error")
 ##            return
 
-        comment = Comment.all().filter("entry =", entry).filter("weburl =", coming_url).get()
+        comment = Comment.all().filter(entry = entry).filter(weburl = coming_url).get()
         if comment:
             self.response.out.write(error % "has pinged before")
             return
@@ -445,7 +453,7 @@ class FeedHandler(BaseRequestHandler):
         BaseRequestHandler.initialize(self,request)
     @cache(time=600)
     def GET(self,tags=None):
-        entries = Entry.all().filter('entrytype =','post').filter('published =',True).order('-date').fetch(10)
+        entries = Entry.all().filter(entrytype = 'post').filter(published = True).order_by('-date')[0:10]#.fetch(10)
         if entries and entries[0]:
             last_updated = entries[0].date
             last_updated = last_updated.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -461,7 +469,7 @@ class CommentsFeedHandler(BaseRequestHandler):
         BaseRequestHandler.initialize(self,request)
     @cache(time=600)
     def GET(self,tags=None):
-        comments = Comment.all().order('-date').filter('ctype =',0).fetch(10)
+        comments = Comment.all().order_by('-date').filter(ctype = 0)[0:10]#.fetch(10)
         if comments and comments[0]:
             last_updated = comments[0].date
             last_updated = last_updated.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -490,7 +498,7 @@ class SitemapHandler(BaseRequestHandler):
 
         addurl(self.blog.baseurl,changefreq='daily',priority=0.9 )
 
-        entries = Entry.all().filter('published =',True).order('-date').fetch(self.blog.sitemap_entries)
+        entries = Entry.all().filter(published = True).order_by('-date')[0:self.blog.sitemap_entries]#.fetch(self.blog.sitemap_entries)
 
         for item in entries:
             loc = "%s/%s" % (self.blog.baseurl, item.link)
@@ -691,7 +699,7 @@ class do_action(BaseRequestHandler):
     def action_getcomments(self):
         key=self.param('key')
         entry=Entry.get(key)
-        comments=Comment.all().filter("entry =",key)
+        comments=Comment.all().filter(entry = key)
 
         commentuser=self.request.cookies.get('comment_user', '')
         if commentuser:
@@ -807,7 +815,7 @@ def getZipHandler(**args):
 #        params = {}
 #        page = 1
 #        entries = Entry.all().filter('entrytype =','post').\
-#                    filter("published =", True).order('-date').\
+#                    filter("published =", True).order_by('-date').\
 #                    fetch(self.blog.posts_per_page, offset = (page-1) * self.blog.posts_per_page)
 #        for entry in entries:
 #            entry.link = '%s/%s' % (self.app_context.current_app, entry.link)

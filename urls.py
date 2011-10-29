@@ -19,9 +19,9 @@ from django.conf import settings
 from django.views.generic.simple import direct_to_template
 
 from settings import MEDIA_URL, THEME_MEDIA_URL, MEDIA_ROOT, THEME_ROOT, THEME_MEDIA_URL
-from blog.views import CheckCode
+#from blog.views import CheckCode
 
-from utils import zipserve
+#from utils import zipserve
 
 from django.contrib.auth.views import login, logout
 
@@ -37,8 +37,8 @@ urlpatterns = patterns('',
     (r'^blog', include('blog.urls')),
     (r'^admin', include('admin.urls')),
     (r'^tests', include('tests.urls')),
-	(r'^checkcode/', CheckCode),
-	(r'^tinymce/(.*)', zipserve.make_zip_handler('tinymce.zip') ),
+	#(r'^checkcode/', CheckCode),
+	#(r'^tinymce/(.*)', zipserve.make_zip_handler('tinymce.zip') ),
 	#(r'^i18n/', include('django.conf.urls.i18n'))
 	
 	(r'^accounts/login/$',  login),

@@ -11,7 +11,7 @@ import django
 from django import http
 from django import shortcuts
 from django.template import RequestContext
-from blog.model import Entry, Link, Archive, Tag, Category, Comment
+from blog.models import Entry, Link, Archive, Tag, Category, Comment
 
 import configs
 

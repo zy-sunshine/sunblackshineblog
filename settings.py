@@ -1,20 +1,4 @@
 #coding=utf-8
-# Copyright 2008 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Django settings for this project.
-
 import os
 
 ROOT_PATH = os.path.dirname(__file__)
@@ -29,10 +13,10 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django_mongodb_engine', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'sunshineblog',                      # Or path to database file if using sqlite3.
-        'USER': 'root',                      # Not used with sqlite3.
-        'PASSWORD': 'root',                  # Not used with sqlite3.
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
@@ -181,19 +165,23 @@ TEMPLATE_DIRS = (
 
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.admin',
-    'django.contrib.sessions',
-    'django.contrib.contenttypes',
+    #'django.contrib.auth',
+    #'django.contrib.admin',
+    #'django.contrib.sessions',
+    #'django.contrib.contenttypes',
     #'django.contrib.sites',
     #'django.contrib.messages',
-    'home',
-    'bookmark',
+    #'home',
+    #'bookmark',
+    'django_mongodb_engine',
+    'djangotoolbox',
+    #'query',
+    #'embedded',
     'blog',
-    'sinaweibo',
-    'admin',
-    'tests',
-    'configs',
+    #'sinaweibo',
+    #'admin',
+    #'tests',
+    #'configs',
 )
 #
 #ALL_TEMPLATE_CUR = ''
@@ -249,3 +237,5 @@ LANGUAGES = (
 
 #CACHE_BACKEND = 'file:///var/tmp/django_cache'
 CACHE_BACKEND = 'file://E:/tmp/django_cache?timeout=30&max_entries=400'
+
+SITE_ID = 1

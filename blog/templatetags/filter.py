@@ -104,3 +104,4 @@ class MfNode(template.Node):
 		# TODO: Fix it
 		#return output
 		return configs.get_g_blog().tigger_filter(fname,output)
+		

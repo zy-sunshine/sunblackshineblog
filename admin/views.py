@@ -18,7 +18,7 @@ from datetime import datetime ,timedelta
 import base64,random,math,zipfile
 from django.utils import simplejson
 import pickle
-from blog.model import Media, Comment, Category, Tag, Entry, Link
+from blog.models import Media, Comment, Category, Tag, Entry, Link
 
 from app.pingback import autoPingback
 from app.trackback import TrackBack
@@ -32,7 +32,7 @@ from base import urlencode
 import configs
 #from configs import g_blog
 
-from blog.model import User
+from blog.models import User
 
 import django
 from django import http
@@ -329,7 +329,7 @@ class admin_import(BaseRequestHandler):
     @requires_admin
     def GET(self,slug=None):
         self.render2('views/admin/import.html',{'importitems':
-            self.blog.plugins.filter('is_import_plugin',True)})
+            self.plugin_util.plugins.filter('is_import_plugin',True)})
 
 ##    def POST(self):
 ##        try:
@@ -952,7 +952,7 @@ class admin_plugins(BaseRequestHandler):
 
     @requires_admin
     def GET(self,slug=None):
-        vals={'plugins':self.blog.plugins}
+        vals={'plugins':self.plugin_util.plugins}
         self.render2('views/admin/plugins.html',vals)
 
     @requires_admin
@@ -960,11 +960,11 @@ class admin_plugins(BaseRequestHandler):
         action=self.param("action")
         name=self.param("plugin")
         ret=self.param("return")
-        self.blog.plugins.activate(name,action=="activate")
+        self.plugin_util.plugins.activate(name,action=="activate")
         if ret:
             self.redirect(ret)
         else:
-            vals={'plugins':self.blog.plugins}
+            vals={'plugins':self.plugin_util.plugins}
             self.render2('views/admin/plugins.html',vals)
 
 class admin_plugins_action(BaseRequestHandler):
@@ -974,11 +974,11 @@ class admin_plugins_action(BaseRequestHandler):
 
     @requires_admin
     def GET(self,slug=None):
-        plugin=self.blog.plugins.getPluginByName(slug)
+        plugin=self.plugin_util.plugins.getPluginByName(slug)
         if not plugin :
             self.error(404)
             return
-        plugins=self.blog.plugins.filter('active',True)
+        plugins=self.plugin_util.plugins.filter('active',True)
         if not plugin.active:
             pcontent=_('''<div>Plugin '%(name)s' havn't actived!</div><br><form method="post" action="/admin/plugins?action=activate&amp;plugin=%(iname)s&amp;return=/admin/plugins/%(iname)s"><input type="submit" value="Activate Now"/></form>''')%{'name':plugin.name,'iname':plugin.iname}
             plugins.insert(0,plugin)
@@ -995,11 +995,11 @@ class admin_plugins_action(BaseRequestHandler):
     @requires_admin
     def POST(self,slug=None):
 
-        plugin=self.blog.plugins.getPluginByName(slug)
+        plugin=self.plugin_util.plugins.getPluginByName(slug)
         if not plugin :
             self.error(404)
             return
-        plugins=self.blog.plugins.filter('active',True)
+        plugins=self.plugin_util.plugins.filter('active',True)
         if not plugin.active:
             pcontent=_('''<div>Plugin '%(name)s' havn't actived!</div><br><form method="post" action="/admin/plugins?action=activate&amp;plugin=%(iname)s&amp;return=/admin/plugins/%(iname)s"><input type="submit" value="Activate Now"/></form>''')%{'name':plugin.name,'iname':plugin.iname}
             plugins.insert(0,plugin)

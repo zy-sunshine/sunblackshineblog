@@ -2,7 +2,7 @@
 from micolog_plugin import *
 import logging,re
 from google.appengine.api import mail
-from blog.model import *
+from blog.models import *
 from google.appengine.api import users
 from base import AdminBaseRequestHandler as BaseRequestHandler, urldecode
 from google.appengine.ext.webapp import template

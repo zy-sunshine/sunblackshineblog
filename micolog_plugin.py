@@ -3,6 +3,8 @@ from configs import OptionSet
 from google.appengine.ext.webapp import template
 #from google.appengine.ext import zipserve
 from utils import zipserve
+import configs
+
 RE_FIND_GROUPS = re.compile('\(.*?\)')
 class PluginIterator:
     def __init__(self, plugins_path='plugins'):
@@ -38,7 +40,8 @@ class PluginIterator:
 
 class Plugins:
     def __init__(self,blog=None):
-        self.blog = blog
+        self.blog = configs.get_g_blog()
+        self.plugin_util = plugin_util
         self.list={}
         self._filter_plugins={}
         self._action_plugins={}
@@ -80,47 +83,11 @@ class Plugins:
                 regexp = '^' + regexp
             if not regexp.endswith('$'):
                 regexp += '$'
-            self.blog.addUrlHandler(regexp, handler)
+            self.plugin_util.addUrlHandler(regexp, handler)
             
-    ## TODO: obsolete method
-    def add_urlhandler(self,plugin,application):
-        for regexp,handler in plugin._handlerlist.items():
-            try:
-                application._handler_map[handler.__name__] = handler
-                if not regexp.startswith('^'):
-                    regexp = '^' + regexp
-                if not regexp.endswith('$'):
-                    regexp += '$'
-                compiled = re.compile(regexp)
-                application._url_mapping.insert(-2,(compiled, handler))
-
-                num_groups = len(RE_FIND_GROUPS.findall(regexp))
-                handler_patterns = application._pattern_map.setdefault(handler, [])
-                handler_patterns.insert(-2,(compiled, num_groups))
-            except:
-                pass
-
     def remove_urlhandlers(self, plugin):
         for regexp, handler in plugin._handlerlist.items():
-            self.blog.removeUrlHandler(regexp, handler)
-
-    ## TODO: obsolete method
-    def remove_urlhandler(self,plugin,application):
-        for regexp,handler in plugin._handlerlist.items():
-            try:
-                if application._handler_map.has_key(handler.__name__):
-                    del application._handler_map[handler.__name__]
-                    for um in application._url_mapping:
-                        if um[1].__name__==handler.__name__:
-                            del um
-                            break
-                    for pm in application._pattern_map:
-                        if pm.__name__==handler.__name__:
-                            del pm
-                            break
-
-            except:
-                pass
+            self.plugin_util.removeUrlHandler(regexp, handler)
 
     def register_handlerlist(self,application):
         for name,item in self.list.items():
@@ -164,7 +131,7 @@ class Plugins:
                             self._action_plugins[k].append(v)
                 #if self.blog.application:
                 #    self.add_urlhandler(plugin,self.blog.application)
-                if hasattr(self.blog, 'addUrlHandler'):
+                if hasattr(self.plugin_util, 'addUrlHandler'):
                     self.add_urlhandlers(plugin)
 
         else:
@@ -186,7 +153,7 @@ class Plugins:
                             self._action_plugins[k].remove(v)
                 #if self.blog.application:
                 #    self.remove_urlhandler(plugin,self.blog.application)
-                if hasattr(self.blog, 'addUrlHandler'):
+                if hasattr(self.plugin_util, 'addUrlHandler'):
                     self.remove_urlhandlers(plugin)
         self._urlmap={}
         self._setupmenu=[]
@@ -258,8 +225,6 @@ class Plugins:
             return self._handlerlist[url]
         else:
             return {}
-
-
 
     def tigger_filter(self,name,content,*arg1,**arg2):
         for func in self.get_filter_plugins(name):

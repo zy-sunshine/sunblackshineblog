@@ -1,6 +1,6 @@
 from micolog_plugin import *
 import logging
-#from blog.model import *
+#from blog.models import *
 from configs import OptionSet
 from google.appengine.api import users
 class highsyntax(Plugin):

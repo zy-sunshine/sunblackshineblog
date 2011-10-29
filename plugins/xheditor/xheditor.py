@@ -1,6 +1,6 @@
 from micolog_plugin import *
 import logging,os
-#from blog.model import *
+#from blog.models import *
 from google.appengine.api import users
 class xheditor(Plugin):
 	def __init__(self):

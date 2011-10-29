@@ -3,7 +3,7 @@ from micolog_plugin import *
 from django.core.cache import cache as memcache
 from google.appengine.api import taskqueue
 from wp_import import *
-#from blog.model import *
+#from blog.models import *
 import logging,math
 from django.utils import simplejson
 from base import BaseRequestHandler,urldecode
